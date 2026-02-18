@@ -1,0 +1,27 @@
+{
+  "mcpServers": {
+    "burp-mcp": {
+      "type": "sse",
+      "url": "http://127.0.0.1:9876/sse"
+    },
+    "intellij-mcp": {
+      "type": "sse",
+      "url": "http://127.0.0.1:64342/sse"
+    },
+    "test-http": {
+      "type": "http",
+      "url": "http://example.com",
+      "env": {
+        "foo": "bar"
+      }
+    },
+    "test-stdio": {
+      "type": "stdio"
+    },
+    "test-stdio2": {
+      "type": "stdio",
+      "command": "foo",
+      "args": ["bar"]
+    }
+  }
+}

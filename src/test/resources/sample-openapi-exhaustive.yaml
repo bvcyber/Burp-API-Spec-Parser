@@ -1,0 +1,675 @@
+openapi: 3.1.0
+info:
+  title: Kitchen Sink API
+  description: |
+    A deliberately overstuffed OpenAPI 3.1 spec intended to **exercise nearly every field**.
+    Some fields are mutually exclusive; where relevant, we illustrate valid alternatives
+    in separate operations/components.
+  termsOfService: https://example.com/terms
+  contact:
+    name: API Support
+    url: https://example.com/support
+    email: support@example.com
+  license:
+    name: Apache-2.0
+    identifier: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  version: 1.2.3
+
+externalDocs:
+  description: Full project documentation
+  url: https://docs.example.com
+
+x-vendor-metadata:
+  owners:
+    - name: Jane Doe
+      team: Core API
+
+servers:
+  - url: https://api.example.com/{basePath}
+    description: Production Server
+    variables:
+      basePath:
+        default: v1
+        enum: [v1, v2]
+        description: API version segment
+  - url: https://staging.example.com
+    description: Staging Server
+
+security:
+  - bearerAuth: []
+  - apiKeyAuth: []
+  - oauth2Auth:
+      - read
+      - write
+
+tags:
+  - name: users
+    description: Operations about users
+    externalDocs:
+      description: User module ADR
+      url: https://docs.example.com/adr/users
+  - name: orders
+    description: Operations about orders
+
+paths:
+  /health:
+    get:
+      summary: Liveness probe
+      description: Returns server health.
+      operationId: getHealth
+      tags: [system]
+      parameters:
+        - name: verbose
+          in: query
+          description: Include extra diagnostics
+          required: false
+          deprecated: false
+          allowEmptyValue: true
+          style: form
+          explode: true
+          allowReserved: true
+          schema:
+            type: boolean
+          example: true
+        - name: sessionId
+          in: cookie
+          description: Session tracking cookie
+          required: false
+          schema:
+            type: string
+          example: abc123xyz
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Request-Id:
+              description: Correlation header
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+              examples:
+                minimal:
+                  summary: Minimal response
+                  value: { status: ok }
+        default:
+          description: Unexpected error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+  /users:
+    summary: Users collection
+    description: User-related operations
+    servers:
+      - url: https://api.example.com/custom
+        description: Operation-level server override
+    parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+    get:
+      summary: List users
+      description: Returns a paginated list of users.
+      operationId: listUsers
+      tags: [users]
+      externalDocs:
+        description: Pagination strategy
+        url: https://docs.example.com/pagination
+      parameters:
+        - name: page
+          in: query
+          description: Page index (1-based)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+          examples:
+            first:
+              summary: First page
+              value: 1
+        - name: per_page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: filter
+          in: query
+          description: Filter expression
+          required: false
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+              examples:
+                byEmail:
+                  value: { email: 'user@example.com' }
+      responses:
+        '200':
+          description: A page of users
+          headers:
+            Link:
+              description: RFC 5988 style pagination links
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUsers'
+              examples:
+                samplePage:
+                  externalValue: https://example.com/examples/users-page.json
+          links:
+            nextPage:
+              operationId: listUsers
+              parameters:
+                page: "$response.body#/meta/nextPage"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      security:
+        - apiKeyAuth: []
+    post:
+      summary: Create a user
+      description: Creates a new user and triggers a callback.
+      operationId: createUser
+      tags: [users]
+      requestBody:
+        description: New user payload
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewUser'
+            examples:
+              defaultUser:
+                summary: Default user example
+                value:
+                  email: default@example.com
+                  profile:
+                    firstName: Default
+                    lastName: User
+                  role: user
+              createExample:
+                summary: Basic user creation
+                value:
+                  email: someone@example.com
+                  profile:
+                    firstName: Some
+                    lastName: One
+              adminUser:
+                summary: Admin user creation
+                description: Example of creating an admin user
+                value:
+                  email: admin@example.com
+                  profile:
+                    firstName: Admin
+                    lastName: User
+                  role: admin
+              minimalUser:
+                summary: Minimal required fields
+                value:
+                  email: minimal@example.com
+                  profile:
+                    firstName: Min
+                    lastName: User
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/NewUser'
+            example:
+              email: xml@example.com
+              profile:
+                firstName: XML
+                lastName: User
+            encoding:
+              profile.firstName:
+                contentType: text/plain
+                headers:
+                  X-Source:
+                    schema:
+                      type: string
+          application/yaml:
+            schema:
+              $ref: '#/components/schemas/NewUserNoExamples'
+            example:
+              email: xml@example.com
+              profile:
+                firstName: XML
+                lastName: User
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: New resource URL
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          links:
+            GetUserById:
+              operationId: getUser
+              parameters:
+                id: "$response.body#/id"
+      callbacks:
+        userEvents:
+          'https://client.example.com/callbacks/users':
+            post:
+              summary: User created event
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/UserCreatedEvent'
+              responses:
+                '200':
+                  description: Event accepted
+
+  /users/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: User identifier
+        schema:
+          type: string
+          pattern: '^[a-f0-9-]{36}$'
+    get:
+      summary: Get a user
+      operationId: getUser
+      tags: [users]
+      responses:
+        '200':
+          description: The user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                exampleUser:
+                  $ref: '#/components/examples/UserExample'
+        '404':
+          description: Not found
+    patch:
+      summary: Update fields
+      operationId: updateUser
+      tags: [users]
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/UserPatch'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+      deprecated: false
+
+  /orders:
+    post:
+      summary: Create order (multipart upload with encoding)
+      operationId: createOrder
+      tags: [orders]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                metadata:
+                  type: string
+                receipt:
+                  type: string
+                  format: binary
+            encoding:
+              metadata:
+                contentType: application/json
+                style: form
+                explode: true
+              receipt:
+                contentType: application/pdf
+                headers:
+                  X-File-Name:
+                    schema:
+                      type: string
+      responses:
+        '201':
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+
+webhooks:
+  orderShipped:
+    post:
+      summary: Webhook fired when an order ships
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderShippedEvent'
+      responses:
+        '200':
+          description: Acknowledge
+
+components:
+  schemas:
+    # JSON Schema 2020-12 features + OAS extensions
+    Problem:
+      type: object
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string, format: uri }
+      additionalProperties: true
+      example:
+        type: https://example.com/probs/outage
+        title: Service outage
+        status: 503
+        detail: Try again later.
+
+    UUID:
+      type: string
+      format: uuid
+      readOnly: true
+
+    Email:
+      type: string
+      format: email
+      writeOnly: true
+
+    Name:
+      type: object
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+        lastName:
+          type: string
+          minLength: 1
+      required: [firstName, lastName]
+      xml:
+        name: name
+        wrapped: false
+
+    UserBase:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        email:
+          $ref: '#/components/schemas/Email'
+        profile:
+          $ref: '#/components/schemas/Name'
+        role:
+          type: string
+          enum: [user, admin]
+          default: user
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+      required: [email, profile]
+      discriminator:
+        propertyName: role
+        mapping:
+          admin: '#/components/schemas/AdminUser'
+          user: '#/components/schemas/RegularUser'
+      externalDocs:
+        description: User data model ADR
+        url: https://docs.example.com/models/user
+
+    RegularUser:
+      allOf:
+        - $ref: '#/components/schemas/UserBase'
+        - type: object
+          properties:
+            permissions:
+              type: array
+              items: { type: string }
+
+    AdminUser:
+      allOf:
+        - $ref: '#/components/schemas/UserBase'
+        - type: object
+          properties:
+            superAdmin:
+              type: boolean
+              default: false
+
+    User:
+      oneOf:
+        - $ref: '#/components/schemas/RegularUser'
+        - $ref: '#/components/schemas/AdminUser'
+      example:
+        id: 11111111-1111-1111-1111-111111111111
+        email: person@example.com
+        profile: { firstName: Ada, lastName: Lovelace }
+        role: user
+
+    NewUser:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        profile:
+          $ref: '#/components/schemas/Name'
+        role:
+          type: string
+          enum: [user, admin]
+      required: [email, profile]
+      examples:
+        - email: sample@example.com
+          profile: { firstName: Sample, lastName: User }
+
+    NewUserNoExamples:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        profile:
+          $ref: '#/components/schemas/Name'
+        role:
+          type: string
+          enum: [user, admin]
+      required: [email, profile]
+
+    UserPatch:
+      type: object
+      properties:
+        email: { type: string, format: email }
+        profile: { $ref: '#/components/schemas/Name' }
+      additionalProperties: false
+      not:
+        required: [id]
+
+    PaginatedUsers:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        meta:
+          type: object
+          properties:
+            total: { type: integer, minimum: 0 }
+            perPage: { type: integer }
+            nextPage: { type: integer, nullable: true }
+      required: [data, meta]
+
+    Order:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        userId: { $ref: '#/components/schemas/UUID' }
+        amount:
+          type: number
+          minimum: 0
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              sku: { type: string }
+              qty: { type: integer, minimum: 1 }
+      required: [userId, amount, currency, items]
+      xml:
+        name: order
+
+    UserCreatedEvent:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        occurredAt: { type: string, format: date-time }
+        type: { const: user.created }
+        payload: { $ref: '#/components/schemas/User' }
+
+    OrderShippedEvent:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        occurredAt: { type: string, format: date-time }
+        type: { const: order.shipped }
+        trackingNumber: { type: string }
+
+  responses:
+    UnauthorizedError:
+      description: Missing or invalid credentials
+      headers:
+        WWW-Authenticate:
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+
+  parameters:
+    AcceptLanguage:
+      name: Accept-Language
+      in: header
+      description: Preferred languages
+      required: false
+      schema:
+        type: string
+      example: en-US
+
+  examples:
+    UserExample:
+      summary: Example user
+      value:
+        id: 22222222-2222-2222-2222-222222222222
+        email: sample@example.com
+        profile: { firstName: Sample, lastName: User }
+        role: user
+
+  requestBodies:
+    UserImport:
+      description: Bulk import users
+      required: true
+      content:
+        text/csv:
+          schema:
+            type: string
+            format: binary
+          examples:
+            csv:
+              externalValue: https://example.com/examples/users.csv
+
+  headers:
+    RateLimit-Remaining:
+      description: Remaining requests in the current window
+      schema:
+        type: integer
+
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    basicAuth:
+      type: http
+      scheme: basic
+    oauth2Auth:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.example.com/oauth/authorize
+          tokenUrl: https://auth.example.com/oauth/token
+          refreshUrl: https://auth.example.com/oauth/refresh
+          scopes:
+            read: Read access
+            write: Write access
+        clientCredentials:
+          tokenUrl: https://auth.example.com/oauth/token
+          scopes:
+            admin: Admin scope
+    oidcAuth:
+      type: openIdConnect
+      openIdConnectUrl: https://auth.example.com/.well-known/openid-configuration
+
+  links:
+    UserById:
+      description: Follow to get the user by id
+      operationId: getUser
+      parameters:
+        id: "$response.body#/id"
+
+  callbacks:
+    ShippingUpdate:
+      '{$request.body#/callbackUrl}':
+        post:
+          requestBody:
+            required: true
+            content:
+              application/json:
+                schema:
+                  type: object
+          responses:
+            '200':
+              description: Callback received
+
+  pathItems:
+    # Example reusable Path Item (new in OAS 3.1 components)
+    UserByIdPathItem:
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      get:
+        operationId: getUserViaPathItem
+        responses:
+          '200':
+            description: OK
