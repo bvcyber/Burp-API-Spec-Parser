@@ -1,6 +1,6 @@
 # Model Parser
 
-[![Latest Release](https://github.com/bvcyber/BurpModelParsePlugin)](https://github.com/bvcyber/BurpModelParsePlugin)
+[![Latest Release](https://img.shields.io/github/v/release/bvcyber/Model-Parser)](https://github.com/bvcyber/Model-Parser/releases/tag/2.8.1-release)
 
 > **Transform API specs into ready-to-test requests in seconds.** Start pentesting directly from specs. Import OpenAPI, Swagger, or AWS JSON API specs directly into Burp. Send all APIs to Repeater, Intruder, Sitemap, and more with a single-click. 
 
@@ -27,7 +27,7 @@
 
 ## ⚡ Quick Start
 
-1. Download the [latest JAR](https://github.com/bvcyber/BurpModelParsePlugin)
+1. Download the [latest JAR](https://github.com/bvcyber/Model-Parser/releases)
 2. Load into Burp Suite Extensions
 3. Import your spec file
 4. Start testing! 🎉
@@ -52,7 +52,7 @@
 
 ### 📦 Extension Installation
 
-1. Download the JAR from [releases](https://github.com/bvcyber/BurpModelParsePlugin)
+1. Download the JAR from [releases](https://github.com/bvcyber/Model-Parser/releases)
 2. Open Burp Suite → **Extensions** tab → **Add**
 3. Select the downloaded JAR file
 4. Find the Model Parser tab in Burp
