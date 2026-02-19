@@ -1,6 +1,8 @@
 # Model Parser
 
-[![Latest Release](https://img.shields.io/github/v/release/bvcyber/Model-Parser)](https://github.com/bvcyber/Model-Parser/releases/tag/2.8.1-release)
+[![Latest Release](https://img.shields.io/github/v/release/bvcyber/model-parser)](https://github.com/bvcyber/Model-Parser/releases/latest)
+
+
 
 > **Transform API specs into ready-to-test requests in seconds.** Start pentesting directly from specs. Import OpenAPI, Swagger, or AWS JSON API specs directly into Burp. Send all APIs to Repeater, Intruder, Sitemap, and more with a single-click. 
 
@@ -18,7 +20,7 @@
 ## 💡 Features
 
 - **🎯 Reduce manual request crafting** – Import your spec and skip straight to security testing
-- **🔄 Multi-format support** – OpenAPI, Swagger, AWS JSON models all in one tool
+- **🔄 Multi-format support** – OpenAPI, Swagger, AWS JSON, MCP models all in one tool
 - **⚡ Instant integration** – One-click send to Repeater, Intruder, Organizer, Sitemap
 
 **🚀 Import → Click → Test**
@@ -50,7 +52,7 @@
 
 ## ⚙️ Setup
 
-### 📦 Extension Installation
+### Extension Installation
 
 1. Download the JAR from [releases](https://github.com/bvcyber/Model-Parser/releases)
 2. Open Burp Suite → **Extensions** tab → **Add**
@@ -63,7 +65,7 @@
 
 ### MCP Servers Config Setup
 
-Model Parser parses the `type`, `url`, and `headers` fields. It uses these values to connect to the servers and call `tools/list`. The extension will handle the rest.
+Model Parser parses the `type`, `url`, and `headers` fields. It uses these values to connect to the servers and call `tools/list`.
 
 ### AWS JSON Setup
 
@@ -131,7 +133,7 @@ python src/main/python/test_request_serializer_client.py
 4. Send to Repeater/Intruder/Sitemap/Organizer
 ```
 
-### 🎛️ Additional Configurations
+### Additional Configurations
 
 **View Selection** – Choose your request format:
 
@@ -142,24 +144,27 @@ python src/main/python/test_request_serializer_client.py
 
 **Host Configuration** – Set your target:
 
-| API Type | Available Hosts                                                                 |
-|----------|---------------------------------------------------------------------------------|
-| AWS JSON | Manual input required ([see limitations](#-limitations))                        |
-| OpenAPI  | • Each host defined in the spec<br>• Manual input<br>(Accepts both URL or FQDN) |
+| API Type | Available Hosts                                                                       |
+|----------|---------------------------------------------------------------------------------------|
+| AWS JSON | Manual input required ([see limitations](#-limitations))                              |
+| OpenAPI  | • Each host defined in the spec<br>• Manual input<br>(Accepts both URL or FQDN)       |
+| MCP      | Uses the URL in the JSON for connection, then the message endpoint for tools requests |
 
 **Authentication Configuration** – Select an authentication method:
 
-| API Type | Available Authentication Methods                            |
-|----------|-------------------------------------------------------------|
-| AWS JSON | None (use the AWS Signer or SigV4 extension)                |
-| OpenAPI  | Auto-generates each security scheme defined in the spec     |
+| API Type | Available Authentication Methods                                                              |
+|----------|-----------------------------------------------------------------------------------------------|
+| AWS JSON | None (use the AWS Signer or SigV4 extension)                                                  |
+| OpenAPI  | Auto-generates each security scheme defined in the spec                                       |
+| MCP      | None (use the `headers` field or add additional headers in the Additional Parameters section) |
 
 **Include Optional Parameters** – Include/Omit optional parameters:
 
-| API Type | Behavior                                                   |
-|----------|------------------------------------------------------------|
-| AWS JSON | Only includes parameters with the value `"required": true` |
-| OpenAPI  | None (not currently used)                                  |
+| API Type | Behavior                                                             |
+|----------|----------------------------------------------------------------------|
+| AWS JSON | Includes parameters based on the value `"required": true`            |
+| OpenAPI  | None (not currently used)                                            |
+| MCP      | Includes parameters based on the `required` field in the tool schema |
 
 ---
 
@@ -169,9 +174,9 @@ python src/main/python/test_request_serializer_client.py
 
 The swagger-parser library expects OAS compliance. If you encounter parsing errors:
 
-- ✅ Validate your spec at [swagger.io/validator](https://validator.swagger.io/#/Validator/validateByContent)
-- 🔧 Fix any schema violations
-- 🔄 Re-import the corrected file
+- Validate your spec at [swagger.io/validator](https://validator.swagger.io/#/Validator/validateByContent)
+- Fix any schema violations
+- Re-import the corrected file
 
 Extremely large OpenAPI specs may fail to load. If you have a large spec, consider splitting it into smaller individual files.
 
@@ -179,8 +184,12 @@ Extremely large OpenAPI specs may fail to load. If you have a large spec, consid
 
 **Manual host configuration required.** Find the correct host by either:
 
-1. 🔍 Intercepting requests from awscli or AWS Console
-2. 📂 Checking `endpoint-rule-set-*.json` for the model at [botocore data folder](https://github.com/boto/botocore/tree/develop/botocore/data/)
+1. Intercepting requests from awscli or AWS Console
+2. Checking `endpoint-rule-set-*.json` for the model at [botocore data folder](https://github.com/boto/botocore/tree/develop/botocore/data/)
+
+### MCP
+
+Currently only the `type`, `url`, and `headers` fields are parsed from the servers config JSON. Servers with `type: "stdio"` are not supported since these do not have a URL to connect to.
 
 ---
 
