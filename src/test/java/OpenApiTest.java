@@ -41,6 +41,18 @@ public class OpenApiTest extends MontoyaTest{
     }
 
     @Test
+    void testOpenAPI2() {
+        try {
+            loaderSampleOpenAPIExhaustive.loadModelFromFile(new File(getClass().getResource("trading-api.json").toURI()));
+            assertEquals("OpenAPIFileHandler", loaderSampleOpenAPIExhaustive.getModelFileHandler().toString());
+            loaderSampleOpenAPIExhaustive.loadModelFromFile(new File(getClass().getResource("garbage.json").toURI()));
+            assertEquals("ErrorFileHandler", loaderSampleOpenAPIExhaustive.getModelFileHandler().toString());
+        } catch (Exception e) {
+            fail(e);
+        }
+    }
+
+    @Test
     void testOpenAPIExample(){
         try {
             loaderSampleOpenAPIExhaustive.loadModelFromFile(new File(getClass().getResource("sample-openapi-exhaustive.yaml").toURI()));
