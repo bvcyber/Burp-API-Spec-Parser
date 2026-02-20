@@ -43,7 +43,7 @@ dependencies {
     implementation("tools.jackson.dataformat:jackson-dataformat-xml:3.0.3")
     implementation("tools.jackson.dataformat:jackson-dataformat-yaml:3.0.3")
 
-    implementation(platform("io.modelcontextprotocol.sdk:mcp-bom:0.17.2"))
+    implementation(platform("io.modelcontextprotocol.sdk:mcp-bom:0.18.0"))
     implementation("io.modelcontextprotocol.sdk:mcp")
 
     testImplementation(platform("org.junit:junit-bom:5.11.3"))

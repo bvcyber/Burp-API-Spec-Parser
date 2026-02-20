@@ -2,8 +2,9 @@ package io.modelcontextprotocol.client.transport;
 
 import com.bureauveritas.modelparser.BurpApi;
 import com.bureauveritas.modelparser.model.Settings;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.modelcontextprotocol.client.transport.customizer.McpAsyncHttpClientRequestCustomizer;
-import io.modelcontextprotocol.json.McpJsonMapper;
+import io.modelcontextprotocol.json.jackson2.JacksonMcpJsonMapper;
 import reactor.core.publisher.Mono;
 
 import java.net.http.HttpClient;
@@ -25,7 +26,7 @@ public class InspectableHttpClientSseClientTransport extends HttpClientSseClient
             applyHeaders(HttpRequest.newBuilder(), headers),
             baseUri,
             sseEndpoint,
-            McpJsonMapper.getDefault(),
+            new JacksonMcpJsonMapper(new ObjectMapper()),
             McpAsyncHttpClientRequestCustomizer.NOOP
         );
     }
