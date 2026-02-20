@@ -107,9 +107,6 @@ public class MainTab {
             }
             int port = Integer.parseInt(portText);
             if (port != Settings.getGrpcPortNumber()) {
-                if (port <= 0 || port > 65535) {
-                    throw new IllegalArgumentException("Port number must be between 1 and 65535.");
-                }
                 BotocorePythonRPC.getInstance().connect(port);
                 Settings.setGrpcPortNumber(port);
             }

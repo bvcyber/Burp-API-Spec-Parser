@@ -6,15 +6,16 @@ import com.bureauveritas.modelparser.model.proto.RequestSerializerOuterClass.Ser
 import com.bureauveritas.modelparser.model.proto.RequestSerializerOuterClass.SerializeRequestResponse;
 import com.bureauveritas.modelparser.model.proto.RequestSerializerGrpc;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class BotocorePythonRPC {
     private RequestSerializerGrpc.RequestSerializerBlockingV2Stub stub;
     private ManagedChannel channel;
-    private int port;
+    private ExecutorService executor;
     private static BotocorePythonRPC instance;
-    private int timeoutSeconds = 5;
+    private final int timeoutSeconds = 3;
 
     public static BotocorePythonRPC getInstance() {
         if (instance == null) {
@@ -28,23 +29,61 @@ public class BotocorePythonRPC {
     }
 
     public void connect(int p) {
+        if (p <= 0 || p > 65535) {
+            throw new IllegalArgumentException("Port number must be between 1 and 65535.");
+        }
+
         BurpApi.getInstance().logging().logToOutput(
             String.format("Configuring gRPC stub on port %d...", p));
+
+        cleanupResources();
         try {
-            if (channel != null) {
-                channel.shutdownNow();
-            }
-            channel = Grpc.newChannelBuilder(String.format("localhost:%d", p), InsecureChannelCredentials.create())
-                .executor(Executors.newCachedThreadPool())
+            executor = Executors.newCachedThreadPool();
+            channel = Grpc.newChannelBuilder(
+                    String.format("localhost:%d", p),
+                    InsecureChannelCredentials.create())
+                .executor(executor)
                 .build();
             stub = RequestSerializerGrpc.newBlockingV2Stub(channel);
-            port = p;
             BurpApi.getInstance().logging().logToOutput("Stub created successfully");
         }
         catch (Exception e) {
             BurpApi.getInstance().logging().logToError(e);
-            stub = null;
+            cleanupResources();
         }
+    }
+
+    private void cleanupResources() {
+        if (channel != null) {
+            BurpApi.getInstance().logging().logToOutput("Shutting down gRPC channel...");
+            try {
+                channel.shutdown();
+                if (!channel.awaitTermination(3, TimeUnit.SECONDS)) {
+                    channel.shutdownNow();
+                }
+            }
+            catch (InterruptedException e) {
+                channel.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+            channel = null;
+        }
+
+        if (executor != null) {
+            try {
+                executor.shutdown();
+                if (!executor.awaitTermination(3, TimeUnit.SECONDS)) {
+                    executor.shutdownNow();
+                }
+            }
+            catch (InterruptedException e) {
+                executor.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+            executor = null;
+        }
+
+        stub = null;
     }
 
 
@@ -70,7 +109,6 @@ public class BotocorePythonRPC {
             throw new RuntimeException(e);
         }
     }
-
 
     public String healthCheck() {
         BurpApi.getInstance().logging().logToOutput("Testing connection to gRPC server...");
