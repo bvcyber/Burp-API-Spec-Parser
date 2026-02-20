@@ -1,4 +1,4 @@
-# Model Parser
+# Burp API Spec Parser
 
 [![Latest Release](https://img.shields.io/github/v/release/bvcyber/model-parser)](https://github.com/bvcyber/Model-Parser/releases/latest)
 
@@ -57,7 +57,7 @@
 1. Download the JAR from [releases](https://github.com/bvcyber/Model-Parser/releases)
 2. Open Burp Suite → **Extensions** tab → **Add**
 3. Select the downloaded JAR file
-4. Find the Model Parser tab in Burp
+4. Find the API Spec Parser tab in Burp
 
 ### OpenAPI / Swagger Setup
 
@@ -65,7 +65,7 @@
 
 ### MCP Servers Config Setup
 
-Model Parser parses the `type`, `url`, and `headers` fields. It uses these values to connect to the servers and call `tools/list`.
+API Spec Parser parses the `type`, `url`, and `headers` fields. It uses these values to connect to the servers and call `tools/list`.
 
 ### AWS JSON Setup
 
@@ -80,16 +80,16 @@ Choose your preferred method:
 ```bash
 # Clone the repository
 git clone <repo-url>
-cd model-parser
+cd burp-api-spec-parser
 
 # Build the image
-docker build -t modelparser .
+docker build -t apiparserservice .
 
 # Run on default port (50055)
-docker run -p 50055:50055 modelparser 50055
+docker run -p 50055:50055 apiparserservice 50055
 
 # Or customize the port
-docker run -p 8080:8080 modelparser 8080
+docker run -p 8080:8080 apiparserservice 8080
 ```
 
 #### Local Python Setup

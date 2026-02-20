@@ -313,8 +313,7 @@ public class ModelViewTab {
             try {
                 comboBoxSelectSerializerView.removeAllItems();
                 modelFileHandler.getSerializers().forEach(comboBoxSelectSerializerView::addItem);
-            }
-            finally {
+            } finally {
                 for (ActionListener listener : listeners) {
                     comboBoxSelectSerializerView.addActionListener(listener);
                 }
@@ -554,10 +553,6 @@ public class ModelViewTab {
         createUIComponents();
         parentRoot = new JPanel();
         parentRoot.setLayout(new GridLayoutManager(3, 1, new Insets(10, 10, 10, 10), -1, -1));
-        labelTopMessage = new JLabel();
-        labelTopMessage.setText("Select a model file");
-        labelTopMessage.putClientProperty("html.disable", Boolean.FALSE);
-        parentRoot.add(labelTopMessage, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel1 = new JPanel();
         panel1.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
         parentRoot.add(panel1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
@@ -804,6 +799,10 @@ public class ModelViewTab {
         panel33.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         panel29.add(panel33, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         panel33.add(componentOperationSerializerView, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        labelTopMessage = new JLabel();
+        labelTopMessage.setText("Supported files: OpenAPI, Swagger, AWS Botocore JSON, MCP servers JSON");
+        labelTopMessage.putClientProperty("html.disable", Boolean.FALSE);
+        parentRoot.add(labelTopMessage, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**
