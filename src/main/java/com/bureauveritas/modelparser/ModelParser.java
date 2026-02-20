@@ -12,7 +12,7 @@ import java.awt.*;
 
 public class ModelParser implements BurpExtension {
 
-    private final String extensionName = "API Spec Parser";
+    private final String extensionName = "API Parser";
 
     @Override
     public void initialize(MontoyaApi api) {
