@@ -1,6 +1,6 @@
-# Burp API Spec Parser
+# Burp API Parser
 
-[![Latest Release](https://img.shields.io/github/v/release/bvcyber/model-parser)](https://github.com/bvcyber/Model-Parser/releases/latest)
+[![Latest Release](https://img.shields.io/github/v/release/bvcyber/burp-api-parser)](https://github.com/bvcyber/Model-Parser/releases/latest)
 
 
 
@@ -45,7 +45,7 @@
 | **OpenAPI 3.0 / 3.1**       | ✅ Supported               | JSON & YAML<br>• Generates requests per content type                                                                                                                 |
 | **Swagger 2.0**             | ✅ Supported               | JSON & YAML<br>• Generates requests per content type                                                                                                                 |
 | **AWS JSON (Botocore)**     | ✅ Supported               | [Requires Python server](#aws-json-setup)<br>• Generate HTTP or awscli requests<br/>📦 [Source models](https://github.com/boto/botocore/tree/develop/botocore/data/) |
-| **MCP Servers Config JSON** | ✅ Supported               | `sse` & `http` type<br>• Calls `tools/list` on each server and stores it in memory<br>• Generates requests for each tool and server capability                       |
+| **MCP Servers Config JSON** | ✅ Supported               | `sse` & `http` type<br>• Calls `tools/list` on each server and stores the tool schemas in memory<br>• Generates requests for each tool and server capability         |
 | **AWS Smithy**              | ❌ Not currently supported |                                                                                                                                                                      |
 
 ---
@@ -57,7 +57,7 @@
 1. Download the JAR from [releases](https://github.com/bvcyber/Model-Parser/releases)
 2. Open Burp Suite → **Extensions** tab → **Add**
 3. Select the downloaded JAR file
-4. Find the API Spec Parser tab in Burp
+4. Find the API Parser tab in Burp
 
 ### OpenAPI / Swagger Setup
 
@@ -65,7 +65,7 @@
 
 ### MCP Servers Config Setup
 
-API Spec Parser parses the `type`, `url`, and `headers` fields. It uses these values to connect to the servers and call `tools/list`.
+API Parser parses the `type`, `url`, and `headers` fields of the JSON config. It uses these values to connect to the servers and call `tools/list`.
 
 ### AWS JSON Setup
 
