@@ -4,7 +4,7 @@
 
 
 
-> **Transform API specs into ready-to-test requests in seconds.** Start pentesting directly from specs. Import OpenAPI, Swagger, or AWS JSON API specs directly into Burp. Send all APIs to Repeater, Intruder, Sitemap, and more with a single-click. 
+> **Transform API specs into ready-to-test requests in seconds.** Start pentesting directly from specs. Import OpenAPI, Swagger, MCP, or AWS JSON API specs directly into Burp. Send all APIs to Repeater, Intruder, Sitemap, and more with a single-click. 
 
 <div align="center">
 
